@@ -1,7 +1,24 @@
 # Memory_Management_Project_S2P1
 ## By: Antoine Martinet, Yedong Wu, Daniel Sánchez
 This documentation outlines the implementation details and usage of our custom memory allocation functions: mymalloc(), myfree(), myrealloc(), and mycalloc(). These functions are designed to allocate memory on the heap of a program using the brk(2) and sbrk(2) system calls.
+### Prerequisites
+GCC (GNU Compiler Collection) installed on your system.
+### Compilation
+To compile the program, follow these steps:
+1. Open a terminal window.
+2. Navigate to the directory containing the source code files (main.c and heap.c).
+3. Compile the source files to object files:
+  gcc -c main.c -o main.o
+  gcc -c heap.c -o heap.o
+4. Link the object files to create the executable:
+  gcc main.o heap.o -o my_program
+### Execution
+To run the program, use the following command:
+  ./my_program
+### Cleanup
+  rm main.o heap.o my_program
 
+## Theory explanation 
 In computer memory management, the Random Access Memory (RAM) is divided into two essential components: the stack and the heap. The stack is a dedicated portion of memory primarily responsible for handling function calls and managing local variables. Whenever a function is invoked, a new stack frame is created, encompassing space for local variables, function parameters, and return addresses. The stack operates on a Last In, First Out (LIFO) basis, meaning that the most recently added item is the first to be removed. While the stack is efficient for managing function-related data, exclusively relying on it can lead to memory inefficiency.
 
 To address this limitation, C provides the heap, a more versatile region of memory designed for dynamic memory allocation. The heap allows for on-the-fly memory requests during program execution, offering flexibility in managing memory resources. Unlike the stack, the heap requires explicit allocation and deallocation of memory by the programmer and does not adhere to a strict LIFO order. Generally, the heap has a larger size compared to the stack, and programs can dynamically request memory as needed. However, accessing data on the heap typically involves more intricate memory management processes, resulting in slower performance compared to the stack. 
