@@ -6,12 +6,16 @@ GCC (GNU Compiler Collection) installed on your system.
 ### Compilation
 To compile the program, follow these steps:
 1. Open a terminal window.
-2. Navigate to the directory containing the source code files (main.c and heap.c).
+2. Navigate to the directory containing the source code files
+
+   (main.c and heap.c).
 3. Compile the source files to object files:
-gcc -c main.c -o main.o
-gcc -c heap.c -o heap.o
-4. Link the object files to create the executable:
-gcc main.o heap.o -o my_program
+
+   gcc -c main.c -o main.o
+   gcc -c heap.c -o heap.o
+5. Link the object files to create the executable:
+
+   gcc main.o heap.o -o my_program
 ### Execution
 To run the program, use the following command:
 ./my_program
