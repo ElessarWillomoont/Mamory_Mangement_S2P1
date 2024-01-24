@@ -32,4 +32,6 @@ In C, to manage the memory with dynamic allocation, there are these main functio
 3. realloc: Stands for "reallocate", it is used to resize a previously allocated block of memory. It takes a pointer to a block of memory previously allocated with malloc, calloc, or realloc, and changes the size of that block. If the size is increased, the content of the previously allocated memory is preserved up to the minimum of the old and new sizes. If the size is decreased, the excess memory at the end of the block is released. Syntax: void* realloc(void* ptr, size_t new_size);
 4. free: It is used to deallocate memory that was previously allocated using functions like malloc, calloc, or realloc. It helps in releasing the memory back to the system so that it can be used for other purposes. Syntax: free(variable);
 
-To understand how these functions work, take a look of the schematics:
+To understand how these functions work, we made them using the sbrk(2) and brk(2) functions as it is shown in the schematics:
+![image](https://github.com/ElessarWillomoont/Memory_Management_S2P1/assets/157610130/610a67ff-e550-4fa6-9263-6cebe4f46fda)
+The brk(2) system call sets the end of the data segment to the specified value, effectively changing the program's break. The sbrk(2) system call increments the program's data space by the specified number of bytes.
