@@ -3,13 +3,16 @@
 #include <string.h>
 #include "./heap.h"
 
+// Global variables representing the heap and stack base
 uintptr_t heap[HEAP_CAP_WORDS] = {0};
 const uintptr_t *stack_base = 0;
 
+// Arrays and variables for memory management
 bool reachable_chunks[CHUNK_LIST_CAP] = {0};
 void *to_free[CHUNK_LIST_CAP] = {0};
 size_t to_free_count = 0;
 
+// Lists to manage allocated, freed, and temporary memory chunks
 Chunk_List alloced_chunks = {0};
 Chunk_List freed_chunks = {
     .count = 1,
@@ -19,74 +22,7 @@ Chunk_List freed_chunks = {
 };
 Chunk_List tmp_chunks = {0};
 
-void chunk_list_insert(Chunk_List *list, void *start, size_t size)
-{
-    assert(list->count < CHUNK_LIST_CAP);
-    list->chunks[list->count].start = start;
-    list->chunks[list->count].size  = size;
-
-    for (size_t i = list->count;
-            i > 0 && list->chunks[i].start < list->chunks[i - 1].start;
-            --i) {
-        const Chunk t = list->chunks[i];
-        list->chunks[i] = list->chunks[i - 1];
-        list->chunks[i - 1] = t;
-    }
-
-    list->count += 1;
-}
-
-void chunk_list_merge(Chunk_List *dst, const Chunk_List *src)
-{
-    dst->count = 0;
-
-    for (size_t i = 0; i < src->count; ++i) {
-        const Chunk chunk = src->chunks[i];
-
-        if (dst->count > 0) {
-            Chunk *top_chunk = &dst->chunks[dst->count - 1];
-
-            if (top_chunk->start + top_chunk->size == chunk.start) {
-                top_chunk->size += chunk.size;
-            } else {
-                chunk_list_insert(dst, chunk.start, chunk.size);
-            }
-        } else {
-            chunk_list_insert(dst, chunk.start, chunk.size);
-        }
-    }
-}
-
-void chunk_list_dump(const Chunk_List *list, const char *name)
-{
-    printf("%s Chunks (%zu):\n", name, list->count);
-    for (size_t i = 0; i < list->count; ++i) {
-        printf("  start: %p, size: %zu\n",
-               (void*) list->chunks[i].start,
-               list->chunks[i].size);
-    }
-}
-
-int chunk_list_find(const Chunk_List *list, uintptr_t *ptr)
-{
-    for (size_t i = 0; i < list->count; ++i) {
-        if (list->chunks[i].start == ptr) {
-            return (int) i;
-        }
-    }
-
-    return -1;
-}
-
-void chunk_list_remove(Chunk_List *list, size_t index)
-{
-    assert(index < list->count);
-    for (size_t i = index; i < list->count - 1; ++i) {
-        list->chunks[i] = list->chunks[i + 1];
-    }
-    list->count -= 1;
-}
-
+// Allocates memory from the heap
 void *heap_alloc(size_t size_bytes)
 {
     const size_t size_words = (size_bytes + sizeof(uintptr_t) - 1) / sizeof(uintptr_t);
@@ -115,6 +51,8 @@ void *heap_alloc(size_t size_bytes)
     return NULL;
 }
 
+
+// Frees allocated memory
 void heap_free(void *ptr)
 {
     if (ptr != NULL) {
@@ -128,6 +66,110 @@ void heap_free(void *ptr)
     }
 }
 
+// Allocates and initializes memory for an array
+void *heap_calloc(size_t nmemb, size_t size_bytes) {
+    size_t total_size = nmemb * size_bytes;
+    void *ptr = heap_alloc(total_size);
+    if (ptr != NULL) {
+        memset(ptr, 0, total_size);
+    }
+    return ptr;
+}
+
+//Resizes allocated memory block
+void *heap_realloc(void *ptr, size_t size_bytes) {
+    if (ptr == NULL) {
+        return heap_alloc(size_bytes);
+    } else {
+        void *new_ptr = heap_alloc(size_bytes);
+        if (new_ptr != NULL) {
+            size_t old_size = 0;
+            int index = chunk_list_find(&alloced_chunks, ptr);
+            if (index >= 0) {
+                old_size = alloced_chunks.chunks[index].size;
+            }
+            memcpy(new_ptr, ptr, old_size);
+
+            heap_free(ptr);
+        }
+        return new_ptr;
+    }
+}
+
+// Inserts a chunk into a sorted list by its start address
+void chunk_list_insert(Chunk_List *list, void *start, size_t size)
+{
+    assert(list->count < CHUNK_LIST_CAP);
+    list->chunks[list->count].start = start;
+    list->chunks[list->count].size  = size;
+
+    for (size_t i = list->count;
+            i > 0 && list->chunks[i].start < list->chunks[i - 1].start;
+            --i) {
+        const Chunk t = list->chunks[i];
+        list->chunks[i] = list->chunks[i - 1];
+        list->chunks[i - 1] = t;
+    }
+
+    list->count += 1;
+}
+
+// Merges two lists of chunks into a single sorted list
+void chunk_list_merge(Chunk_List *dst, const Chunk_List *src)
+{
+    dst->count = 0;
+
+    for (size_t i = 0; i < src->count; ++i) {
+        const Chunk chunk = src->chunks[i];
+
+        if (dst->count > 0) {
+            Chunk *top_chunk = &dst->chunks[dst->count - 1];
+
+            if (top_chunk->start + top_chunk->size == chunk.start) {
+                top_chunk->size += chunk.size;
+            } else {
+                chunk_list_insert(dst, chunk.start, chunk.size);
+            }
+        } else {
+            chunk_list_insert(dst, chunk.start, chunk.size);
+        }
+    }
+}
+
+// Prints information about chunks in a list
+void chunk_list_dump(const Chunk_List *list, const char *name)
+{
+    printf("%s Chunks (%zu):\n", name, list->count);
+    for (size_t i = 0; i < list->count; ++i) {
+        printf("  start: %p, size: %zu\n",
+               (void*) list->chunks[i].start,
+               list->chunks[i].size);
+    }
+}
+
+// Finds the index of a chunk in a list based on its start address
+int chunk_list_find(const Chunk_List *list, uintptr_t *ptr)
+{
+    for (size_t i = 0; i < list->count; ++i) {
+        if (list->chunks[i].start == ptr) {
+            return (int) i;
+        }
+    }
+
+    return -1;
+}
+
+// Removes a chunk from a list at a specified index
+void chunk_list_remove(Chunk_List *list, size_t index)
+{
+    assert(index < list->count);
+    for (size_t i = index; i < list->count - 1; ++i) {
+        list->chunks[i] = list->chunks[i + 1];
+    }
+    list->count -= 1;
+}
+
+// Recursive function to mark reachable memory regions
 static void mark_region(const uintptr_t *start, const uintptr_t *end)
 {
     for (; start < end; start += 1) {
@@ -144,6 +186,7 @@ static void mark_region(const uintptr_t *start, const uintptr_t *end)
     }
 }
 
+// Collects and frees unreachable memory
 void heap_collect()
 {
     const uintptr_t *stack_start = (const uintptr_t*)__builtin_frame_address(0);
@@ -163,29 +206,4 @@ void heap_collect()
     }
 }
 
-void *heap_calloc(size_t nmemb, size_t size_bytes) {
-    size_t total_size = nmemb * size_bytes;
-    void *ptr = heap_alloc(total_size);
-    if (ptr != NULL) {
-        memset(ptr, 0, total_size);
-    }
-    return ptr;
-}
-void *heap_realloc(void *ptr, size_t size_bytes) {
-    if (ptr == NULL) {
-        return heap_alloc(size_bytes);
-    } else {
-        void *new_ptr = heap_alloc(size_bytes);
-        if (new_ptr != NULL) {
-            size_t old_size = 0;
-            int index = chunk_list_find(&alloced_chunks, ptr);
-            if (index >= 0) {
-                old_size = alloced_chunks.chunks[index].size;
-            }
-            memcpy(new_ptr, ptr, old_size);
 
-            heap_free(ptr);
-        }
-        return new_ptr;
-    }
-}
