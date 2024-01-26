@@ -25,7 +25,9 @@ rm main.o heap.o my_program
 1. Navigate to Struct2
 2. Run the command to compile and install the shared library "lib_my_malloc.so" into /usr/local/lib, super user password is required
    use following command:
+
    make
+
    make install
 
 for testing:
