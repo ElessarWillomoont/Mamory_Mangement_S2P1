@@ -6,6 +6,8 @@
 #define ALIGNMENT 16
 #define BLOCK_SIZE sizeof(MemoryBlock)
 
+MemoryBlock *free_list = NULL;
+
 // Structure to represent a memory block in the custom memory manager
 typedef struct MemoryBlock {
     size_t size;           // Size of the memory block
@@ -13,56 +15,9 @@ typedef struct MemoryBlock {
     int free;              // Flag to indicate if the block is free
 } MemoryBlock;
 
-// Function declarations
-void *malloc(size_t size);
-void free(void *ptr);
-void *calloc(size_t num, size_t size);
-void *realloc(void *ptr, size_t newSize);
-void print_memory_map(void);
-MemoryBlock *find_free_block(MemoryBlock **last, size_t size);
-MemoryBlock *request_space(MemoryBlock* last, size_t size);
-void merge_free_blocks(MemoryBlock *block);
-
-// Global variable to keep track of the memory blocks
-MemoryBlock *free_list = NULL;
-
-// Main function to demonstrate the usage of custom memory management functions
-int main() {
-    printf("Initial memory map:\n");
-    print_memory_map();
-
-    // Dynamic memory allocation using custom malloc function
-    int *array = (int*)malloc(40 * sizeof(int));
-    printf("Memory map after malloc for array:\n");
-    print_memory_map();
-
-    // Allocating memory using custom calloc function
-    int *array_calloc = (int*)calloc(25, sizeof(int));
-    printf("Memory map after calloc for array_calloc:\n");
-    print_memory_map();
-
-    // Reallocating memory using custom realloc function
-    array = (int*)realloc(array, 20 * sizeof(int));
-    printf("Memory map after realloc for array:\n");
-    print_memory_map();
-
-    // Freeing memory using custom free function
-    free(array);
-    printf("Memory map after free for array:\n");
-    print_memory_map();
-
-    // Freeing memory allocated by calloc
-    free(array_calloc);
-    printf("Memory map after free for array_calloc:\n");
-    print_memory_map();
-
-    return 0;
-}
-
-// Function definitions below...
-
 // Merges consecutive free blocks into a single larger free block.
 // This helps to reduce fragmentation.
+
 void merge_free_blocks(MemoryBlock *block) {
     while (block->next != NULL && block->next->free) {
         block->size += BLOCK_SIZE + block->next->size;

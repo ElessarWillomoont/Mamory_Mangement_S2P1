@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/user/Documents/CreaTech/Computer_Science/C/CS_Projects/Github_Main/Memory_Management_S2P1",
-      "program": "c:/Users/user/Documents/CreaTech/Computer_Science/C/CS_Projects/Github_Main/Memory_Management_S2P1/build/Debug/outDebug",
+      "cwd": "c:/Users/Candl/OneDrive/桌面/temp/malloc/Memory_Management_S2P1-1",
+      "program": "c:/Users/Candl/OneDrive/桌面/temp/malloc/Memory_Management_S2P1-1/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
