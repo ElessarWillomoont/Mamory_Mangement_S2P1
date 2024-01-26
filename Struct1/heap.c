@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h> // Include for brk(2) and sbrk(2)
+#include <errno.h> // Include for errno
 #include "./heap.h"
 
 // Global variables representing the heap and stack base
@@ -22,7 +24,9 @@ Chunk_List freed_chunks = {
 };
 Chunk_List tmp_chunks = {0};
 
-// Allocates memory from the heap
+uintptr_t heap_end = 0;
+
+// Allocates memory from the heap using brk(2) and sbrk(2)
 void *heap_alloc(size_t size_bytes)
 {
     const size_t size_words = (size_bytes + sizeof(uintptr_t) - 1) / sizeof(uintptr_t);
@@ -45,6 +49,23 @@ void *heap_alloc(size_t size_bytes)
 
                 return chunk.start;
             }
+        }
+
+        // If there's not enough space in the existing chunks, allocate more space with brk(2) and sbrk(2)
+        if (heap_end == 0) {
+            heap_end = (uintptr_t)sbrk(0);  // Get the current end of the heap
+        }
+
+        uintptr_t new_heap_end = heap_end + size_words * sizeof(uintptr_t);
+        if (brk((void *)new_heap_end) == 0) {
+            chunk_list_insert(&alloced_chunks, (void *)heap_end, size_words);
+            void *allocated_ptr = (void *)heap_end;
+            heap_end = new_heap_end;
+            return allocated_ptr;
+        } else {
+            // Handle error
+            perror("brk");
+            return NULL;
         }
     }
 
