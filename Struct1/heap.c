@@ -24,6 +24,7 @@ Chunk_List freed_chunks = {
 };
 Chunk_List tmp_chunks = {0};
 
+// Global variable representing the end of the heap
 uintptr_t heap_end = 0;
 
 // Allocates memory from the heap using brk(2) and sbrk(2)
