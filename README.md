@@ -33,6 +33,7 @@ In C, to manage the memory with dynamic allocation, there are these main functio
 4. free: It is used to deallocate memory that was previously allocated using functions like malloc, calloc, or realloc. It helps in releasing the memory back to the system so that it can be used for other purposes. Syntax: free(variable);
 
 To understand how these functions work, we made them using the sbrk(2) and brk(2) system calls as it is shown in the schematics:
+
 ![image](https://github.com/ElessarWillomoont/Memory_Management_S2P1/assets/157610130/610a67ff-e550-4fa6-9263-6cebe4f46fda)
 
-The brk(2) system call sets the end of the data segment to the specified value, effectively changing the program's break. The sbrk(2) system call increments the program's data space by the specified number of bytes.
+The process that we follow to make our malloc function was to use the brk(2) system call sets the end of the data segment to the specified value, effectively changing the program's break. It increments the program's data space by the specified number of bytes, allowing us to allocate the data in an specific PID.
