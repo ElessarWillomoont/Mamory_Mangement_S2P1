@@ -4,9 +4,6 @@
 #include <string.h>
 
 #define ALIGNMENT 16
-#define BLOCK_SIZE sizeof(MemoryBlock)
-
-MemoryBlock *free_list = NULL;
 
 // Structure to represent a memory block in the custom memory manager
 typedef struct MemoryBlock {
@@ -14,6 +11,9 @@ typedef struct MemoryBlock {
     struct MemoryBlock *next;  // Pointer to the next memory block
     int free;              // Flag to indicate if the block is free
 } MemoryBlock;
+
+#define BLOCK_SIZE sizeof(MemoryBlock)
+MemoryBlock *free_list = NULL;
 
 // Merges consecutive free blocks into a single larger free block.
 // This helps to reduce fragmentation.
@@ -53,8 +53,8 @@ MemoryBlock *request_space(MemoryBlock* last, size_t size) {
     return block;
 }
 
-// Custom implementation of malloc to allocate memory.
-void *malloc(size_t size) {
+// Custom implementation of my_malloc to allocate memory.
+void *my_malloc(size_t size) {
     if (size <= 0) {
         return NULL;
     }
@@ -95,7 +95,7 @@ void *malloc(size_t size) {
 }
 
 // Custom implementation of free to release allocated memory.
-void free(void *ptr) {
+void my_free(void *ptr) {
     if (!ptr) {
         return;
     }
@@ -105,21 +105,21 @@ void free(void *ptr) {
     merge_free_blocks(block);
 }
 
-// Custom implementation of calloc using malloc and memset.
-void *calloc(size_t num, size_t size) {
+// Custom implementation of my_calloc using my_malloc and memset.
+void *my_calloc(size_t num, size_t size) {
     size_t totalSize = num * size;
-    void *ptr = malloc(totalSize);
+    void *ptr = my_malloc(totalSize);
     if (ptr) {
         memset(ptr, 0, totalSize);
     }
     return ptr;
 }
 
-// Custom implementation of realloc to resize allocated memory.
-void *realloc(void *ptr, size_t newSize) {
+// Custom implementation of my_realloc to resize allocated memory.
+void *my_realloc(void *ptr, size_t newSize) {
     if (!ptr) {
-        // Equivalent to malloc if the original pointer is NULL
-        return malloc(newSize);
+        // Equivalent to my_malloc if the original pointer is NULL
+        return my_malloc(newSize);
     }
 
     MemoryBlock *block = (MemoryBlock *)((char *)ptr - BLOCK_SIZE);
@@ -140,10 +140,10 @@ void *realloc(void *ptr, size_t newSize) {
     }
 
     // Allocate a new memory block and copy the old data
-    void *newPtr = malloc(newSize);
+    void *newPtr = my_malloc(newSize);
     if (newPtr) {
         memcpy(newPtr, ptr, block->size);
-        free(ptr);
+        my_free(ptr);
     }
     return newPtr;
 }

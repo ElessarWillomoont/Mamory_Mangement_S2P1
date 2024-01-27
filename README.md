@@ -21,6 +21,48 @@ To run the program, use the following command:
 ### Cleanup
 rm main.o heap.o my_program
 
+### Special steps to use shared library (currently only for linux users)
+1. Navigate to Struct2
+2. Run the command to compile and install the shared library "lib_my_malloc.so" into /usr/local/lib, super user password is required
+   use following command:
+
+   make
+
+   make install
+
+for testing:
+
+3. There is a test program in the folder also(test_program.c), complie it in ordinary way, but special parament required:
+
+gcc -o test_program test_program.c -l_my_malloc
+
+4. run the program to see the result if it is like this:
+   Initial memory map:
+Memory Blocks:
+Memory map after malloc for array:
+Memory Blocks:
+Block at 0x55763c3b0000, size: 160, free: 0
+Memory map after calloc for array_calloc:
+Memory Blocks:
+Block at 0x55763c3b0000, size: 160, free: 0
+Block at 0x55763c3b00b8, size: 112, free: 0
+Memory map after realloc for array:
+Memory Blocks:
+Block at 0x55763c3b0000, size: 80, free: 0
+Block at 0x55763c3b0068, size: 56, free: 1
+Block at 0x55763c3b00b8, size: 112, free: 0
+Memory map after free for array:
+Memory Blocks:
+Block at 0x55763c3b0000, size: 160, free: 1
+Block at 0x55763c3b00b8, size: 112, free: 0
+Memory map after free for array_calloc:
+Memory Blocks:
+Block at 0x55763c3b0000, size: 160, free: 1
+Block at 0x55763c3b00b8, size: 112, free: 1
+
+5. to clean up:
+Navigate to /usr/local/lib, and delete lib_my_malloc.so ( super user permission needed), delete all other files in the downloaded folder.
+
 ### Theory explanation 
 In computer memory management, the Random Access Memory (RAM) is divided into two essential components: the stack and the heap. The stack is a dedicated portion of memory primarily responsible for handling function calls and managing local variables. Whenever a function is invoked, a new stack frame is created, encompassing space for local variables, function parameters, and return addresses. The stack operates on a Last In, First Out (LIFO) basis, meaning that the most recently added item is the first to be removed. While the stack is efficient for managing function-related data, exclusively relying on it can lead to memory inefficiency.
 
